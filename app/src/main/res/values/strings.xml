@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">VitaGuard</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="dash_bp">Blood Pressure:</string>
+    <string name="dash_hr">Heart Rate:</string>
+    <string name="dash_bo">Oxygen Saturation:</string>
+</resources>

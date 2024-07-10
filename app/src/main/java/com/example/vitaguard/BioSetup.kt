@@ -27,7 +27,7 @@ class BioSetup : AppCompatActivity() {
 
 
         btn.setOnClickListener{
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, BioSetup2::class.java)
             startActivity(intent)
         }
 

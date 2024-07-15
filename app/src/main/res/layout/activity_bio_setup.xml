@@ -8,7 +8,6 @@
     tools:context=".BioSetup">
 
 
-
     <TextView
         android:id="@+id/setupHeader"
         android:layout_width="wrap_content"
@@ -65,6 +64,7 @@
     tools:layout_editor_absoluteY="342dp" /> -->
 
     <RadioGroup
+        android:id="@+id/genderButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="100sp"
@@ -106,8 +106,8 @@
         android:id="@+id/feetField"
         android:layout_width="87sp"
         android:layout_height="50sp"
-        android:layout_marginStart="142sp"
-        android:layout_marginTop="186sp"
+        android:layout_marginStart="144dp"
+        android:layout_marginTop="184dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -115,8 +115,8 @@
         android:id="@+id/inchField"
         android:layout_width="87sp"
         android:layout_height="50sp"
-        android:layout_marginStart="239sp"
-        android:layout_marginTop="186sp"
+        android:layout_marginStart="236dp"
+        android:layout_marginTop="184dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -127,7 +127,7 @@
         android:layout_marginStart="144sp"
         android:layout_marginTop="239sp"
         android:ems="10"
-        android:inputType="numberDecimal"
+        android:inputType="number"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -137,9 +137,24 @@
         android:layout_height="103sp"
         android:layout_marginStart="110sp"
         android:layout_marginTop="531sp"
+        android:backgroundTint="@android:color/holo_blue_dark"
         android:text="Submit"
         android:textSize="34sp"
-        android:backgroundTint="@android:color/holo_blue_dark"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/warningMessage"
+        android:layout_width="260dp"
+        android:layout_height="31dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginTop="500dp"
+        android:text="Please complete all fields"
+        android:textAlignment="center"
+        android:textColor="#FF0000"
+        android:textSize="20sp"
+        android:textStyle="italic"
+        android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

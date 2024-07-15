@@ -25,6 +25,9 @@ class BioSetup2 : AppCompatActivity() {
             insets
         }
 
+        val sharedPref = getSharedPreferences("myPref", MODE_PRIVATE)
+        val editor = sharedPref.edit()
+
         val check1 = findViewById<Switch>(R.id.passwordSwitch)
         val password = findViewById<EditText>(R.id.passwordField)
         val btn = findViewById<Button>(R.id.confirmButton)
@@ -37,6 +40,8 @@ class BioSetup2 : AppCompatActivity() {
         btn.setOnClickListener{
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
+
+
         }
     }
 }

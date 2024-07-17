@@ -1,9 +1,18 @@
 package com.example.vitaguard.ui.settings
 
+import android.Manifest.permission.CALL_PHONE
+import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Intent
+import android.content.Intent.ACTION_CALL
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.telephony.SubscriptionManager
+import android.telephony.TelephonyManager
+import android.telephony.emergency.EmergencyNumber
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +25,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.vitaguard.databinding.FragmentSettingsBinding
 import androidx.activity.result.ActivityResultCallback
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.setFragmentResult
 
 class SettingsFragment : Fragment() {
@@ -40,6 +51,7 @@ class SettingsFragment : Fragment() {
 
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         val root: View = binding.root
+
         //logic for setting up the bluetooth button
         bluetoothManager = requireActivity().getSystemService(ComponentActivity.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
@@ -62,23 +74,35 @@ class SettingsFragment : Fragment() {
                 }
             })
 
-        /*
-        //How the "This is notifications Fragment" text is displayed
-        val textView: TextView = binding.textNotifications
-        settingsViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+        //logic for calling permissions
+        lateinit var pNum: String
+        lateinit var pUri: Uri
+        lateinit var callIntent: Intent
+        val callPermReq = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                isGranted ->
+            if(isGranted){
+                pNum = "9194522487"
+                pUri = Uri.parse("tel:$pNum")
+                callIntent = Intent(ACTION_CALL, pUri)
+                startActivity(callIntent)
+            } else {
+                Toast.makeText(requireActivity(),"Calling permissions denied", Toast.LENGTH_SHORT).show()
+            }
         }
-        */
 
         val btnBluetooth: Button = binding.buttonBluetooth
         val btnGoodHealth: Button = binding.buttonGoodHealth
         val btnMidHealth: Button = binding.buttonMidHealth
         val btnBadHealth: Button = binding.buttonBadHealth
+        val btnCall: Button = binding.buttonCall
 
         btnBluetooth.setOnClickListener{ enableBluetooth()}
         btnGoodHealth.setOnClickListener{ debugGoodHealth()}
         btnMidHealth.setOnClickListener{ debugMidHealth()}
         btnBadHealth.setOnClickListener{ debugBadHealth()}
+        btnCall.setOnClickListener{
+            callPermReq.launch(CALL_PHONE)
+        }
         return root
     }
 
@@ -86,6 +110,7 @@ class SettingsFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 
     private fun enableBluetooth(){
         takePermission.launch(android.Manifest.permission.BLUETOOTH_CONNECT)

@@ -14,6 +14,8 @@ import androidx.core.view.WindowInsetsCompat
 
 class BioSetup2 : AppCompatActivity() {
 
+    val passwordSetup = "placeholder"
+
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,12 +35,28 @@ class BioSetup2 : AppCompatActivity() {
         val btn = findViewById<Button>(R.id.confirmButton)
 
         check1.setOnCheckedChangeListener { buttonView, isChecked ->
-            if (isChecked) password.visibility = View.VISIBLE
-            if (!isChecked) password.visibility = View.INVISIBLE
+            if (isChecked) {
+                password.visibility = View.VISIBLE
+            }
+            if (!isChecked) {
+                password.visibility = View.INVISIBLE
+            }
         }
 
         btn.setOnClickListener{
             val intent = Intent(this, MainActivity::class.java)
+            editor.apply{
+                putBoolean("passwordSetup", true)
+                apply()
+            }
+            if (password.getText().toString() != "") {
+                val pushedPass = password.getText().toString()
+                editor.apply{
+                    putString("password", pushedPass)
+                    putBoolean("passwordSetup", false)
+                    apply()
+                }
+            }
             startActivity(intent)
 
 

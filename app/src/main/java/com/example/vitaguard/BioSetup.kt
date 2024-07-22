@@ -92,8 +92,15 @@ class BioSetup : AppCompatActivity() {
 
 
         if(!sharedPref.getBoolean(firstTimeSetup,true)) {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
+            if(!sharedPref.getBoolean("passwordSetup",false)) {
+                val intent = Intent(this, PasswordScreen::class.java)
+                startActivity(intent)
+            }
+            else {
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+            }
+
         }
 
         btn.setOnClickListener{

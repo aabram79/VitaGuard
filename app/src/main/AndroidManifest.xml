@@ -41,6 +41,9 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
+            android:name=".PasswordScreen"
+            android:exported="false" />
+        <activity
             android:name=".BioSetup"
             android:exported="true">
             <intent-filter>

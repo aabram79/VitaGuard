@@ -12,17 +12,18 @@ import com.android.volley.toolbox.Volley
 object NetworkUtils {
 
     private const val TAG = "NetworkUtils"
-
+    private var requestSuccess = false
     fun sendVolleyPostRequest(context: Context, url: String, postMessage: String): Boolean {
-        var requestSuccess = false
+
         val requestQueue: RequestQueue = Volley.newRequestQueue(context)
         val stringRequest = object : StringRequest(
             Request.Method.POST, url,
             Response.Listener { response ->
-                Log.d(TAG, "Response: $response")
+                Log.d(TAG, "Line 22 Response: $response")
                 requestSuccess = true
             },
             Response.ErrorListener { error ->
+                Log.d(TAG, "Line 26 Error")
                 Log.e(TAG, "Error: ${error.networkResponse?.statusCode}, ${error.message}")
                 requestSuccess = false
             }) {
@@ -51,6 +52,7 @@ object NetworkUtils {
         }
 
         requestQueue.add(stringRequest)
+        Log.d(TAG, "requestSuccess result is $requestSuccess")
         return requestSuccess
     }
 }

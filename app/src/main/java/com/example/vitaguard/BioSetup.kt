@@ -52,8 +52,8 @@ class BioSetup : AppCompatActivity() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
-
-        val pingWorkRequest = PeriodicWorkRequestBuilder<AppWorker>(1, TimeUnit.MINUTES)
+        //set up the periodic pings for the wifi
+        val pingWorkRequest = PeriodicWorkRequestBuilder<AppWorker>(10, TimeUnit.SECONDS)
             .setConstraints(constraints)
             .build()
 

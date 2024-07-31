@@ -16,7 +16,6 @@ class AppWorker(appContext: Context, workerParams: WorkerParameters) : Coroutine
         val url = "http://141.148.65.60:3000"
 
         val result = NetworkUtils.sendVolleyPostRequest(applicationContext, url, postMessage)
-
         if (result) {
             Log.d("PingWorker", "Ping sent successfully")
             Result.success()

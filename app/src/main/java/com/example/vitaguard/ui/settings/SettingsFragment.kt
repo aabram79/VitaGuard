@@ -2,32 +2,33 @@ package com.example.vitaguard.ui.settings
 
 import android.Manifest.permission.CALL_PHONE
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
+import android.bluetooth.*
+import android.bluetooth.BluetoothDevice.TRANSPORT_LE
+import android.bluetooth.BluetoothGatt.GATT_SUCCESS
+import android.bluetooth.le.BluetoothLeScanner
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
+import android.bluetooth.le.ScanResult
+import android.bluetooth.le.ScanSettings
 import android.content.Intent
 import android.content.Intent.ACTION_CALL
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.telephony.SubscriptionManager
-import android.telephony.TelephonyManager
-import android.telephony.emergency.EmergencyNumber
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import com.example.vitaguard.databinding.FragmentSettingsBinding
-import androidx.activity.result.ActivityResultCallback
-import androidx.annotation.RequiresApi
-import androidx.core.content.ContextCompat
-import androidx.fragment.app.setFragmentResult
+import java.util.ArrayList
+import java.util.UUID
 
 class SettingsFragment : Fragment() {
 
@@ -36,11 +37,12 @@ class SettingsFragment : Fragment() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var takePermission: ActivityResultLauncher<String>
     private lateinit var takeResultLauncher: ActivityResultLauncher<Intent>
-
+    private lateinit var bluetoothScanner: BluetoothLeScanner
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!
 
+    @SuppressLint("MissingPermission")
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -73,6 +75,9 @@ class SettingsFragment : Fragment() {
                     Toast.makeText(requireActivity(),"Bluetooth denied", Toast.LENGTH_SHORT).show()
                 }
             })
+
+        //logic for scanning for bluetooth
+        bluetoothScanner = bluetoothAdapter.bluetoothLeScanner
 
         //logic for calling permissions
         lateinit var pNum: String
@@ -111,10 +116,10 @@ class SettingsFragment : Fragment() {
         _binding = null
     }
 
-
     private fun enableBluetooth(){
         takePermission.launch(android.Manifest.permission.BLUETOOTH_CONNECT)
     }
+
     private fun debugGoodHealth(){
         val healthData: Bundle = debugHealth(110.0,65.0,83.0,97.3)
         healthData.putString("color","g")

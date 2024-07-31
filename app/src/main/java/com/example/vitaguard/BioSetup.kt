@@ -44,7 +44,7 @@ class BioSetup : AppCompatActivity() {
             insets
         }
 
-        // Start the PingService
+        // Start the AppService
         val serviceIntent = Intent(this, AppService::class.java)
         startService(serviceIntent)
 
@@ -58,7 +58,7 @@ class BioSetup : AppCompatActivity() {
             .build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "PingWorker",
+            "AppWorker",
             ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
             pingWorkRequest
         )

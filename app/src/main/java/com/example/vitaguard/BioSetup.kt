@@ -18,7 +18,16 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.WorkManager
+import com.example.vitaguard.services.AppService
 import com.example.vitaguard.ui.one_time_settings.OneTimeSettingsFragment
+import com.example.vitaguard.workers.AppWorker
+import java.util.concurrent.TimeUnit
+import androidx.work.PeriodicWorkRequestBuilder
+import com.example.vitaguard.utils.NetworkUtils
 
 
 class BioSetup : AppCompatActivity() {
@@ -34,6 +43,25 @@ class BioSetup : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // Start the PingService
+        val serviceIntent = Intent(this, AppService::class.java)
+        startService(serviceIntent)
+
+        // Schedule the periodic work to every 1 minute with constraints
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val pingWorkRequest = PeriodicWorkRequestBuilder<AppWorker>(1, TimeUnit.MINUTES)
+            .setConstraints(constraints)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "PingWorker",
+            ExistingPeriodicWorkPolicy.CANCEL_AND_REENQUEUE,
+            pingWorkRequest
+        )
 
         val sharedPref = getSharedPreferences("myPref", MODE_PRIVATE)
         val editor = sharedPref.edit()

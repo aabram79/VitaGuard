@@ -28,6 +28,7 @@ import com.example.vitaguard.workers.AppWorker
 import java.util.concurrent.TimeUnit
 import androidx.work.PeriodicWorkRequestBuilder
 import com.example.vitaguard.utils.NetworkUtils
+import com.example.vitaguard.utils.PhoneNumberUtils
 
 
 class BioSetup : AppCompatActivity() {
@@ -66,6 +67,8 @@ class BioSetup : AppCompatActivity() {
         val sharedPref = getSharedPreferences("myPref", MODE_PRIVATE)
         val editor = sharedPref.edit()
 
+
+        val userPhoneNumber = findViewById<EditText>(R.id.phoneNumber)
         val btn = findViewById<Button>(R.id.submitButton)
         val txt1 = findViewById<EditText>(R.id.weightField)
         val genderType = findViewById<RadioGroup>(R.id.genderButton)
@@ -132,6 +135,7 @@ class BioSetup : AppCompatActivity() {
         }
 
         btn.setOnClickListener{
+            val phoneNumber = userPhoneNumber.text.toString()
             if (selectedFeet == "--" || selectedInches == "--"){
                 warning.visibility = View.VISIBLE
             }
@@ -139,6 +143,9 @@ class BioSetup : AppCompatActivity() {
                 warning.visibility = View.VISIBLE
             }
             else if (genderType.checkedRadioButtonId == -1) {
+                warning.visibility = View.VISIBLE
+            }
+            else if (!PhoneNumberUtils.isValidPhoneNumber(phoneNumber)) {
                 warning.visibility = View.VISIBLE
             }
             else {
@@ -150,6 +157,7 @@ class BioSetup : AppCompatActivity() {
                     putString("inches", selectedInches)
                     putInt("weight", weight)
                     putInt("gender", gender)
+                    putString("emergencyNumber", phoneNumber)
                     putBoolean(firstTimeSetup, false)
                     apply()
                 }

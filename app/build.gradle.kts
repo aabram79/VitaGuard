@@ -50,6 +50,9 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.runtime.android)
     implementation(libs.androidx.bluetooth)
+    implementation(files("D:/AndroidStudioProjects/VitaGuard/app/src/main/libs/rxjava-2.2.10.jar"))
+    implementation(files("D:/AndroidStudioProjects/VitaGuard/app/src/main/libs/reactive-streams-1.0.2.jar"))
+    implementation(files("D:/AndroidStudioProjects/VitaGuard/app/src/main/libs/rxandroid-2.0.1.aar"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -58,6 +61,7 @@ dependencies {
     implementation(libs.okhttp.logging.interceptor)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.volley) // Add this line for Volley //
+
 
 
 }

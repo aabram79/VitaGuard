@@ -3,13 +3,7 @@ package com.example.vitaguard.ui.settings
 import android.Manifest.permission.CALL_PHONE
 import android.annotation.SuppressLint
 import android.bluetooth.*
-import android.bluetooth.BluetoothDevice.TRANSPORT_LE
-import android.bluetooth.BluetoothGatt.GATT_SUCCESS
 import android.bluetooth.le.BluetoothLeScanner
-import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
-import android.bluetooth.le.ScanResult
-import android.bluetooth.le.ScanSettings
 import android.content.Intent
 import android.content.Intent.ACTION_CALL
 import android.net.Uri
@@ -27,8 +21,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.lifecycle.ViewModelProvider
 import com.example.vitaguard.databinding.FragmentSettingsBinding
-import java.util.ArrayList
-import java.util.UUID
 
 class SettingsFragment : Fragment() {
 
@@ -75,9 +67,6 @@ class SettingsFragment : Fragment() {
                     Toast.makeText(requireActivity(),"Bluetooth denied", Toast.LENGTH_SHORT).show()
                 }
             })
-
-        //logic for scanning for bluetooth
-        bluetoothScanner = bluetoothAdapter.bluetoothLeScanner
 
         //logic for calling permissions
         lateinit var pNum: String

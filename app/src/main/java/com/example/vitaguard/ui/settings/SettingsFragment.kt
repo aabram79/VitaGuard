@@ -29,7 +29,6 @@ class SettingsFragment : Fragment() {
     private lateinit var bluetoothAdapter: BluetoothAdapter
     private lateinit var takePermission: ActivityResultLauncher<String>
     private lateinit var takeResultLauncher: ActivityResultLauncher<Intent>
-    private lateinit var bluetoothScanner: BluetoothLeScanner
     // This property is only valid between onCreateView and
     // onDestroyView.
     private val binding get() = _binding!!

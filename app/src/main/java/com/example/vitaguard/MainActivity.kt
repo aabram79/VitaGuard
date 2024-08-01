@@ -12,7 +12,9 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -47,6 +49,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var takeResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var connectToBTObservable:Observable<String>
     private lateinit var btReadings: TextView
+    private lateinit var adapter: ArrayAdapter<String>
+
 
     //We declare a default UUID to create the global variable
     private var arduinoUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
@@ -80,6 +84,10 @@ class MainActivity : AppCompatActivity() {
         //Instances of the Android UI elements that will will use during the execution of the APP
         val btn: Button = binding.searchBluetooth
         val btnScan: Button = binding.buttonScan
+
+        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, stringList)
+        val listView: ListView = findViewById(R.id.display_list)
+        listView.adapter = adapter
 
         btn.setOnClickListener{ searchDevices()}
         btnScan.setOnClickListener{repeatScan(1)}
@@ -216,6 +224,18 @@ class MainActivity : AppCompatActivity() {
         }
          return "error"
     }
+
+    // Function to update the list using a ListIterator
+    private fun updateList() {
+        val listIterator = stringList.listIterator()
+
+        // Traverse the list and modify elements
+        while (listIterator.hasNext()) {
+            val element = listIterator.next()
+            if (element == "Cherry") {
+                listIterator.set("X") // Replace "Cherry" with "X"
+            }
+        }
 
     fun repeatScan(seconds: Long){
 

@@ -4,8 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
@@ -31,9 +29,40 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textHome
+        /*val changeData1: TextView = binding.listOutput1
+        val changeData2: TextView = binding.listOutput2
+        val changeData3: TextView = binding.listOutput3
+
+        fun iterateUsingListIterator1() {
+            val myList = mutableListOf("A", "B", "C", "D", "E")
+            val iterator = myList.listIterator()
+            while (iterator.hasNext()) {
+                val displayNext1 = iterator.next()
+                changeData1.text = displayNext1
+            }
+        }
+
+        fun iterateUsingListIterator2() {
+            val myList = mutableListOf("A", "B", "C", "D", "E")
+            val iterator = myList.listIterator()
+            while (iterator.hasNext()) {
+                val displayNext1 = iterator.next()
+                changeData2.text = displayNext1
+            }
+        }
+
+        fun iterateUsingListIterator3() {
+            val myList = mutableListOf("A", "B", "C", "D", "E")
+            val iterator = myList.listIterator()
+            while (iterator.hasNext()) {
+                val displayNext1 = iterator.next()
+                changeData3.text = displayNext1
+            }
+        }*/
+
+        
         homeViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+
         }
         return root
     }

@@ -1,11 +1,11 @@
 package com.example.vitaguard.utils
 
+const val GOOD_HEALTH: String = "no"
+const val MID_HEALTH: String = "minor"
+const val BAD_HEALTH: String = "major"
 data class HealthDataPoint(
-    val GOOD_HEALTH: String = "g",
-    val MID_HEALTH: String = "m",
-    val BAD_HEALTH: String = "b",
-    var bpm: Int,
-    var sp02: Int,
-    var bp: Int,
-    var code: String
+    var bpm: Double,
+    var sp02: Double,
+    var code: String,
+    var date: String
 )

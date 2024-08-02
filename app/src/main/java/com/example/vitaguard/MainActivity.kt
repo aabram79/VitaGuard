@@ -1,34 +1,40 @@
 package com.example.vitaguard
 
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
-import android.view.View
-import android.widget.ArrayAdapter
 import android.widget.Button
-import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.vitaguard.databinding.ActivityMainBinding
+import com.example.vitaguard.ui.settings.SettingsFragment
+import com.example.vitaguard.utils.BAD_HEALTH
 import com.example.vitaguard.utils.ConnectThread
 import com.example.vitaguard.utils.ConnectedThread
+import com.example.vitaguard.utils.GOOD_HEALTH
 import com.example.vitaguard.utils.HealthDataPoint
+import com.example.vitaguard.utils.MID_HEALTH
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -37,32 +43,43 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.json.JSONObject
+import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
+
+private const val ERROR_READ = 0
+private const val SCAN_LOOP_TIME = 1 //in seconds
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var bluetoothManager: BluetoothManager
     private lateinit var bluetoothAdapter: BluetoothAdapter
+    private lateinit var arduinoBTModule: BluetoothDevice
     private lateinit var takePermission: ActivityResultLauncher<String>
     private lateinit var takeResultLauncher: ActivityResultLauncher<Intent>
     private lateinit var connectToBTObservable:Observable<String>
     private lateinit var btReadings: TextView
-    private lateinit var adapter: ArrayAdapter<String>
-
+    private lateinit var callDialog: AlertDialog
+    private lateinit var pNum: String
+    private lateinit var pUri: Uri
+    private lateinit var callIntent: Intent
 
     //We declare a default UUID to create the global variable
     private var arduinoUUID: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
     private var healthReadings = ArrayList<HealthDataPoint>()
-    private val ERROR_READ = 0
     private var foundBTDevice = false
-    var data = "err"
-    var bpm = 0.0
-    var sp02 = 0.0
+    private var scanJob = true
+    private var scanCount = 0
+    private var data = "err"
+    private var bpm = 0.0
+    private var sp02 = 0.0
+    private var avgBPM = 0.0
+    private var avgSP02 = 0.0
+    private var report = ""
+    private var currentTime: String = java.util.Date().toString()
 
-    private lateinit var arduinoBTModule: BluetoothDevice
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -81,20 +98,63 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
+        //logic for calling permissions
+
+        val callPermReq = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+                isGranted ->
+            if(isGranted){
+                pNum = "9194522487"
+                pUri = Uri.parse("tel:$pNum")
+                callIntent = Intent(Intent.ACTION_CALL, pUri)
+                startActivity(callIntent)
+            } else {
+                Toast.makeText(this,"Calling permissions denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         //Instances of the Android UI elements that will will use during the execution of the APP
         val btn: Button = binding.searchBluetooth
         val btnScan: Button = binding.buttonScan
-
-        adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, stringList)
-        val listView: ListView = findViewById(R.id.display_list)
-        listView.adapter = adapter
-
+        btReadings = findViewById(R.id.btReadings)
+        callDialog = AlertDialog.Builder(this)
+            .setTitle("Collision Detected!")
+            .setMessage("Call Emergency Contact?")
+            .setPositiveButton("Call") { _, _ ->
+                callPermReq.launch(Manifest.permission.CALL_PHONE)
+            }
+            .setNegativeButton("Cancel") { _, _ ->
+                scanJob = true
+                repeatScan(SCAN_LOOP_TIME)
+            }.create()
         btn.setOnClickListener{ searchDevices()}
-        btnScan.setOnClickListener{repeatScan(1)}
+        btnScan.setOnClickListener{repeatScan(SCAN_LOOP_TIME)}
+
+
+        callDialog.setOnShowListener { dialog ->
+            val defaultButton =
+                (dialog as AlertDialog).getButton(AlertDialog.BUTTON_POSITIVE)
+            val buttonText = defaultButton.text
+            object : CountDownTimer(10000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    defaultButton.text = java.lang.String.format(
+                        Locale.getDefault(), "%s (%d)",
+                        buttonText,
+                        TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) + 1 //add one so it never displays zero
+                    )
+                }
+
+                override fun onFinish() {
+                    if (dialog.isShowing) {
+                        dialog.dismiss()
+                        //TODO: Add calling function
+                    }
+                }
+            }.start()
+        }
         //logic for setting up the bluetooth
         bluetoothManager = getSystemService(ComponentActivity.BLUETOOTH_SERVICE) as BluetoothManager
         bluetoothAdapter = bluetoothManager.adapter
-        btReadings = findViewById<TextView>(R.id.btReadings)
+
         takePermission = registerForActivityResult(ActivityResultContracts.RequestPermission()){
             if (it){
                 val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -103,6 +163,7 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this,"Bluetooth Permission not given", Toast.LENGTH_SHORT).show()
             }
         }
+
         takeResultLauncher=registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()) { res->
                 if(res.resultCode == ComponentActivity.RESULT_OK){
@@ -117,9 +178,7 @@ class MainActivity : AppCompatActivity() {
         var handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 if (msg.what == ERROR_READ) {
-                    val arduinoMsg = msg.obj.toString() // Read message from Arduino
-                    // replace this with the text output:
-                    // btReadings.setText(arduinoMsg)
+                    Log.e("Main Activity",msg.obj.toString()) // Read message from Arduino
                 }
             }
         }
@@ -187,21 +246,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-    fun getBluetoothAdapter(): BluetoothAdapter {
-        return bluetoothAdapter
-    }
-
-    fun getUUID(): UUID {
-        return arduinoUUID
-    }
-
-    fun getArduinoBTModule(): BluetoothDevice {
-        return arduinoBTModule
-    }
-
-    fun getFoundBTDevice(): Boolean {
-        return foundBTDevice
-    }
 
      @SuppressLint("CheckResult")
      fun getReadings(): String {
@@ -213,45 +257,81 @@ class MainActivity : AppCompatActivity() {
                     btReadings.text = valueRead
                     //Avg BPM=36, SpO2=96.28, Force=1.00
                     if(valueRead != null){
-                        if(valueRead == ""){
-                            //TODO: initiate a 5 second notice before calling
+                        if(valueRead.contains("trauma")){
+                            scanJob = false
+                            if(!callDialog.isShowing) callDialog.show()
+                        } else if (valueRead.contains("Avg")) {
+                            data = valueRead.filter { setOf('.','1','2','3','5','6','7','8','9','0',',') .contains(it)}
+                        } else {
+                            data = "err"
                         }
 
-                        data = valueRead.filter { setOf('.','1','2','3','5','6','7','8','9','0',',') .contains(it)}
                     }
                 }
-            return data
         }
-         return "error"
+         return data
     }
 
-    // Function to update the list using a ListIterator
-    private fun updateList() {
-        val listIterator = stringList.listIterator()
-
-        // Traverse the list and modify elements
-        while (listIterator.hasNext()) {
-            val element = listIterator.next()
-            if (element == "Cherry") {
-                listIterator.set("X") // Replace "Cherry" with "X"
-            }
-        }
-
     fun repeatScan(seconds: Long){
-
         CoroutineScope(Dispatchers.Main).launch {
-            while (true){
+            while (scanJob){
                 data = getReadings()
                 if(data != "err"){
-
-                    bpm = data.substringBefore(',').toDouble()
+                    bpm += data.substringBefore(',').toDouble()
                     data = data.substringAfter(',')
-                    sp02 = data.substringAfter(',').toDouble()
+                    sp02 += data.substringAfter(',').toDouble()
                     data = data.substringAfter(',')
                     Log.d("Main Activity","BPM is $bpm, sp02 is $sp02, force is $data")
+                    if(scanCount>=10){ //averages out the last 10 readings
+                        bpm /= 10
+                        sp02 /= 10
+                        currentTime = java.util.Date().toString()
+                        when{
+                            bpm <= 60 || bpm >= 120 || sp02 < 60 || sp02 >= 120 -> healthReadings.add(HealthDataPoint(bpm,sp02, BAD_HEALTH, currentTime))
+                            bpm <= 70 || bpm >= 100 || sp02 < 75 || sp02 > 100 -> healthReadings.add(HealthDataPoint(bpm,sp02, MID_HEALTH, currentTime))
+                            else -> healthReadings.add(HealthDataPoint(bpm,sp02, GOOD_HEALTH, currentTime))
+                        }
+                        healthReadings.add(HealthDataPoint(bpm,sp02, GOOD_HEALTH, currentTime))
+                        bpm = 0.0
+                        sp02 = 0.0
+                    }
                 }
+                if(scanCount >=10) {
+                    scanCount = 0;
+                }
+                else scanCount++
                 delay(seconds * 1000)
             }
         }
     }
+
+    fun repeatScan(seconds: Int){
+        repeatScan(seconds.toLong())
+    }
+
+
+    fun createReport(){
+        report = ""
+        if(healthReadings.size > 0){
+            avgBPM = 0.0
+            avgSP02 = 0.0
+            //pauses the scan
+            scanJob = false
+
+            for (reading in healthReadings){
+                avgBPM += reading.bpm
+                avgSP02 += reading.sp02
+            }
+            avgBPM /= healthReadings.size
+            avgSP02 /= healthReadings.size
+        } else {
+            avgBPM = -1.0
+            avgSP02 = -1.0
+        }
+        report = "Average BPM: $avgBPM, Average sp02: $avgSP02\n\t"
+        for (reading in healthReadings.filter { r -> r.code != GOOD_HEALTH }){
+            report += "WARNING: ${reading.code} health concern detected at ${reading.date}. BPM: ${reading.bpm}, sp02: $sp02\n\t"
+        }
+    }
+
 }

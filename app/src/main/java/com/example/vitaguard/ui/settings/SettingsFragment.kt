@@ -67,21 +67,7 @@ class SettingsFragment : Fragment() {
                 }
             })
 
-        //logic for calling permissions
-        lateinit var pNum: String
-        lateinit var pUri: Uri
-        lateinit var callIntent: Intent
-        val callPermReq = registerForActivityResult(ActivityResultContracts.RequestPermission()) {
-                isGranted ->
-            if(isGranted){
-                pNum = "9194522487"
-                pUri = Uri.parse("tel:$pNum")
-                callIntent = Intent(ACTION_CALL, pUri)
-                startActivity(callIntent)
-            } else {
-                Toast.makeText(requireActivity(),"Calling permissions denied", Toast.LENGTH_SHORT).show()
-            }
-        }
+
 
         val btnBluetooth: Button = binding.buttonBluetooth
         val btnGoodHealth: Button = binding.buttonGoodHealth
@@ -93,9 +79,7 @@ class SettingsFragment : Fragment() {
         btnGoodHealth.setOnClickListener{ debugGoodHealth()}
         btnMidHealth.setOnClickListener{ debugMidHealth()}
         btnBadHealth.setOnClickListener{ debugBadHealth()}
-        btnCall.setOnClickListener{
-            callPermReq.launch(CALL_PHONE)
-        }
+
         return root
     }
 
